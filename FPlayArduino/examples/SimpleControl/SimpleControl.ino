@@ -41,7 +41,7 @@ void loop()
   btn = digitalRead(2);
   if (btn != btnPrevious)
   {
-    if (btn != 0 && btnPrevious == 0)
+    if (btn != 0)
     {
       // Skip to the previous song
       FPlay.previous();
@@ -54,7 +54,7 @@ void loop()
   btn = digitalRead(3);
   if (btn != btnPlayPause)
   {
-    if (btn != 0 && btnPlayPause == 0)
+    if (btn != 0)
     {
       // Either play or pause the player
       FPlay.playPause();
@@ -67,7 +67,7 @@ void loop()
   btn = digitalRead(4);
   if (btn != btnNext)
   {
-    if (btn != 0 && btnNext == 0)
+    if (btn != 0)
     {
       // Skip to the next song
       FPlay.next();
