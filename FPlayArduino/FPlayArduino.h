@@ -94,30 +94,30 @@
 
 #define FlagState 0x07
 #define FlagEscape 0x08
-#define FlagSpectrumArrived 0x10
+#define FlagBinsArrived 0x10
 #define FlagPlayerStateArrived 0x20
 
 #define StartOfHeading 0x01
 #define Escape 0x1B
 #define EndOfTransmission 0x04
 
-#define MessageSpectrum0 0x00 //not actually transmitted
-#define MessageSpectrum4 0x20
-#define MessageSpectrum8 0x21
-#define MessageSpectrum16 0x22
-#define MessageSpectrum32 0x23
-#define MessageSpectrum64 0x24
-#define MessageSpectrum128 0x25
-#define MessageSpectrum256 0x26
-#define MessageStartSpectrum 0x30
-#define PayloadSpectrum4 MessageSpectrum4
-#define PayloadSpectrum8 MessageSpectrum8
-#define PayloadSpectrum16 MessageSpectrum16
-#define PayloadSpectrum32 MessageSpectrum32
-#define PayloadSpectrum64 MessageSpectrum64
-#define PayloadSpectrum128 MessageSpectrum128
-#define PayloadSpectrum256 MessageSpectrum256
-#define MessageStopSpectrum 0x31
+#define MessageBins0 0x00 //not actually transmitted
+#define MessageBins4 0x20
+#define MessageBins8 0x21
+#define MessageBins16 0x22
+#define MessageBins32 0x23
+#define MessageBins64 0x24
+#define MessageBins128 0x25
+#define MessageBins256 0x26
+#define MessageStartBinTransmission 0x30
+#define PayloadBins4 MessageBins4
+#define PayloadBins8 MessageBins8
+#define PayloadBins16 MessageBins16
+#define PayloadBins32 MessageBins32
+#define PayloadBins64 MessageBins64
+#define PayloadBins128 MessageBins128
+#define PayloadBins256 MessageBins256
+#define MessageStopBinTransmission 0x31
 #define MessagePlayerCommand 0x32
 #define PayloadPlayerCommandUpdateState 0x00
 #define PayloadPlayerCommandPrevious 0x58
@@ -127,357 +127,380 @@
 #define PayloadPlayerCommandPause 0x56
 #define PayloadPlayerCommandIncreaseVolume 0x18
 #define PayloadPlayerCommandDecreaseVolume 0x19
+#define PayloadPlayerCommandSetVolume 0xD1
 #define MessagePlayerState 0x33
 #define PayloadPlayerStateFlagPlaying 0x01
 #define PayloadPlayerStateFlagLoading 0x02
 
 #if (FPlayBinCount == 256)
-#define MessageSpectrum MessageSpectrum256
+#define MessageBins MessageBins256
 #elif (FPlayBinCount == 128)
-#define MessageSpectrum MessageSpectrum128
+#define MessageBins MessageBins128
 #elif (FPlayBinCount == 64)
-#define MessageSpectrum MessageSpectrum64
+#define MessageBins MessageBins64
 #elif (FPlayBinCount == 32)
-#define MessageSpectrum MessageSpectrum32
+#define MessageBins MessageBins32
 #elif (FPlayBinCount == 16)
-#define MessageSpectrum MessageSpectrum16
+#define MessageBins MessageBins16
 #elif (FPlayBinCount == 8)
-#define MessageSpectrum MessageSpectrum8
+#define MessageBins MessageBins8
 #elif (FPlayBinCount == 4)
-#define MessageSpectrum MessageSpectrum4
+#define MessageBins MessageBins4
 #else
-#define MessageSpectrum MessageSpectrum0
+#define MessageBins MessageBins0
 #endif
 
 class _FPlay {
 private:
-	struct _PlayerState {
-		uint8_t state;
-		int32_t songPosition;
-		int32_t songLength;
-	} __attribute__ ((packed));
+  struct _PlayerState {
+    uint8_t state;
+    uint8_t volume;
+    int32_t songPosition;
+    int32_t songLength;
+  } __attribute__ ((packed));
 
-	static uint8_t state, currentMessage, payloadIndex;
-	static _PlayerState playerState;
-	static uint16_t payloadLength;
+  static uint8_t state, currentMessage, payloadIndex;
+  static _PlayerState playerState;
+  static uint16_t payloadLength;
 
-	static void sendEmptyMessage(uint8_t msg) {
-		fs.write(StartOfHeading);
-		fs.write(msg);
-		// (payload length << 0) = (0 << 1) = 0
-		fs.write(0);
-		fs.write(0);
-		fs.write(EndOfTransmission);
-	}
+  static void sendEmptyMessage(uint8_t msg) {
+    fs.write(StartOfHeading);
+    fs.write(msg);
+    // (payload length << 0) = (0 << 1) = 0
+    fs.write(0);
+    fs.write(0);
+    fs.write(EndOfTransmission);
+  }
 
-	// For the sake of simplicity, payload MUST be a byte
-	// that does not need to be escaped
-	static void sendOneByteMessage(uint8_t msg, uint8_t payload) {
-		fs.write(StartOfHeading);
-		fs.write(msg);
-		// (payload length << 1) = (1 << 1) = 2
-		fs.write(2);
-		fs.write(0);
-		fs.write(payload);
-		fs.write(EndOfTransmission);
-	}
+  // For the sake of simplicity, payload MUST be a byte
+  // that does not need to be escaped
+  static void sendOneByteMessage(uint8_t msg, uint8_t payload) {
+    fs.write(StartOfHeading);
+    fs.write(msg);
+    // (payload length << 1) = (1 << 1) = 2
+    fs.write(2);
+    fs.write(0);
+    fs.write(payload);
+    fs.write(EndOfTransmission);
+  }
 
-	static void resetState() {
-		playerState.state = 0;
-		playerState.songPosition = -1;
-		playerState.songLength = -1;
+  // For the sake of simplicity, payload MUST two bytes
+  // that does not need to be escaped
+  static void sendTwoByteMessage(uint8_t msg, uint8_t payload0, uint8_t payload1) {
+    fs.write(StartOfHeading);
+    fs.write(msg);
+    // (payload length << 1) = (2 << 1) = 4
+    fs.write(4);
+    fs.write(0);
+    fs.write(payload0);
+    fs.write(payload1);
+    fs.write(EndOfTransmission);
+  }
+
+  static void resetState() {
+    playerState.state = 0;
+    playerState.songPosition = -1;
+    playerState.songLength = -1;
 #if (FPlayBinCount != 0)
-		// Nice trick for the case when FPlayBinCount = 256 ;)
-		state = (uint8_t)(FPlayBinCount);
-		do {
-			state--;
-			bin[state] = 0;
-		} while (state);
+    // Nice trick for the case when FPlayBinCount = 256 ;)
+    state = (uint8_t)(FPlayBinCount);
+    do {
+      state--;
+      bins[state] = 0;
+    } while (state);
 #else
-		state = 0;
+    state = 0;
 #endif
-	}
+  }
 
 public:
-	static uint8_t bin[FPlayBinCount];
+  static uint8_t bins[FPlayBinCount];
 
-	inline static void begin(uint32_t baud) {
-		resetState();
-		fs.begin(baud);
-		// Wait for serial port to connect (needed for Leonardo only)
-		while (!fs) {
-			;
-		}
-	}
+  inline static void begin(uint32_t baud) {
+    resetState();
+    fs.begin(baud);
+    // Wait for serial port to connect (needed for Leonardo only)
+    while (!fs) {
+      ;
+    }
+  }
 
-	inline static void begin(uint32_t baud, uint8_t config) {
-		resetState();
-		fs.begin(baud, config);
-		// Wait for serial port to connect (needed for Leonardo only)
-		while (!fs) {
-			;
-		}
-	}
+  inline static void begin(uint32_t baud, uint8_t config) {
+    resetState();
+    fs.begin(baud, config);
+    // Wait for serial port to connect (needed for Leonardo only)
+    while (!fs) {
+      ;
+    }
+  }
 
-	inline static void end() {
-		resetState();
-		fs.end();
-	}
+  inline static void end() {
+    resetState();
+    fs.end();
+  }
 
-	inline static bool isPlaying() {
-		return ((playerState.state & PayloadPlayerStateFlagPlaying) ? true : false);
-	}
+  inline static bool isPlaying() {
+    return ((playerState.state & PayloadPlayerStateFlagPlaying) ? true : false);
+  }
 
-	inline static bool isLoading() {
-		return ((playerState.state & PayloadPlayerStateFlagLoading) ? true : false);
-	}
+  inline static bool isLoading() {
+    return ((playerState.state & PayloadPlayerStateFlagLoading) ? true : false);
+  }
 
-	inline static int32_t songPosition() {
-		return playerState.songPosition;
-	}
+  inline static uint8_t volume() {
+    return playerState.volume;
+  }
 
-	inline static int32_t songLength() {
-		return playerState.songLength;
-	}
+  inline static int32_t songPosition() {
+    return playerState.songPosition;
+  }
 
-	inline static void startSpectrum() {
+  inline static int32_t songLength() {
+    return playerState.songLength;
+  }
+
+  inline static void startFrequencyBinsTransmission() {
 #if (FPlayBinCount != 0)
-		sendOneByteMessage(MessageStartSpectrum, MessageSpectrum);
+    sendOneByteMessage(MessageStartBinTransmission, MessageBins);
 #endif
-	}
+  }
 
-	inline static void stopSpectrum() {
+  inline static void stopFrequencyBinsTransmission() {
 #if (FPlayBinCount != 0)
-		sendEmptyMessage(MessageStopSpectrum);
+    sendEmptyMessage(MessageStopBinTransmission);
 #endif
-	}
+  }
 
-	inline static void updateState() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandUpdateState);
-	}
+  inline static void updateState() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandUpdateState);
+  }
 
-	inline static void previous() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPrevious);
-	}
+  inline static void previous() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPrevious);
+  }
 
-	inline static void playPause() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPlayPause);
-	}
+  inline static void playPause() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPlayPause);
+  }
 
-	inline static void next() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandNext);
-	}
+  inline static void next() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandNext);
+  }
 
-	inline static void play() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPlay);
-	}
+  inline static void play() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPlay);
+  }
 
-	inline static void pause() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPause);
-	}
+  inline static void pause() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandPause);
+  }
 
-	inline static void increaseVolume() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandIncreaseVolume);
-	}
+  inline static void increaseVolume() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandIncreaseVolume);
+  }
 
-	inline static void decreaseVolume() {
-		sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandDecreaseVolume);
-	}
+  inline static void decreaseVolume() {
+    sendOneByteMessage(MessagePlayerCommand, PayloadPlayerCommandDecreaseVolume);
+  }
 
-	inline static bool hasNewStateArrived() {
-		if ((state & FlagPlayerStateArrived)) {
-			// Clear the flag so hasNewStateArrived() returns
-			// true only once after receiving the player's state
-			state &= (~FlagPlayerStateArrived);
-			return true;
-		}
-		return false;
-	}
+  inline static void setVolume(byte volume) {
+    sendTwoByteMessage(MessagePlayerCommand, PayloadPlayerCommandSetVolume, (volume >= 100) ? 200 : (volume << 1));
+  }
 
-	inline static bool hasNewSpectrumArrived() {
-		if ((state & FlagSpectrumArrived)) {
-			// Clear the flag so hasNewSpectrumArrived() returns
-			// true only once after receiving the song's spectrum
-			state &= (~FlagSpectrumArrived);
-			return true;
-		}
-		return false;
-	}
+  inline static bool hasNewStateArrived() {
+    if ((state & FlagPlayerStateArrived)) {
+      // Clear the flag so hasNewStateArrived() returns
+      // true only once after receiving the player's state
+      state &= (~FlagPlayerStateArrived);
+      return true;
+    }
+    return false;
+  }
 
-	static void process() {
-		uint8_t count = FPlayMaxBytesAtATime;
-		while (fs.available() && count) {
-			count--;
-			uint8_t data = fs.read();
-			if (data == StartOfHeading) {
-				// Restart the state machine
-				state &= (~(FlagEscape | FlagState));
-				continue;
-			}
-			switch ((state & FlagState)) {
-			case 0:
-				// This byte should be the message type
+  inline static bool haveNewFrequencyBinsArrived() {
+    if ((state & FlagBinsArrived)) {
+      // Clear the flag so haveNewFrequencyBinsArrived() returns true
+	  // only once after receiving the song's frequency bins
+      state &= (~FlagBinsArrived);
+      return true;
+    }
+    return false;
+  }
+
+  static void process() {
+    uint8_t count = FPlayMaxBytesAtATime;
+    while (fs.available() && count) {
+      count--;
+      uint8_t data = fs.read();
+      if (data == StartOfHeading) {
+        // Restart the state machine
+        state &= (~(FlagEscape | FlagState));
+        continue;
+      }
+      switch ((state & FlagState)) {
+      case 0:
+        // This byte should be the message type
 #if (FPlayBinCount != 0)
-				if (data == MessageSpectrum || data == MessagePlayerState) {
+        if (data == MessageBins || data == MessagePlayerState) {
 #else
-				if (data == MessagePlayerState) {
+        if (data == MessagePlayerState) {
 #endif
-					// Take the state machine to its next state
-					currentMessage = data;
-					state++;
-				} else {
-					// Take the state machine to its error state
-					state |= FlagState;
-				}
-				continue;
-			case 1:
-				// This should be payload length's first byte
-				// (bits 0 - 6 left shifted by 1)
-				if ((data & 0x01)) {
-					// Take the state machine to its error state
-					state |= FlagState;
-				} else {
-					payloadLength = (uint16_t)(data >> 1);
-					// Take the state machine to its next state
-					state++;
-				}
-				continue;
-			case 2:
-				// This should be payload length's second byte
-				// (bits 7 - 13 left shifted by 1)
-				if ((data & 0x01)) {
-					// Take the state machine to its error state
-					state |= FlagState;
-				} else {
-					payloadLength |= ((uint16_t)data << 6);
+          // Take the state machine to its next state
+          currentMessage = data;
+          state++;
+        } else {
+          // Take the state machine to its error state
+          state |= FlagState;
+        }
+        continue;
+      case 1:
+        // This should be payload length's first byte
+        // (bits 0 - 6 left shifted by 1)
+        if ((data & 0x01)) {
+          // Take the state machine to its error state
+          state |= FlagState;
+        } else {
+          payloadLength = (uint16_t)(data >> 1);
+          // Take the state machine to its next state
+          state++;
+        }
+        continue;
+      case 2:
+        // This should be payload length's second byte
+        // (bits 7 - 13 left shifted by 1)
+        if ((data & 0x01)) {
+          // Take the state machine to its error state
+          state |= FlagState;
+        } else {
+          payloadLength |= ((uint16_t)data << 6);
 
-					// Sanity check
-					if (!payloadLength) {
-						// Take the state machine to its error state
-						state |= FlagState;
-						continue;
-					}
-					if (currentMessage == MessagePlayerState) {
-						if (payloadLength > 18) {
-							// Take the state machine to its error state
-							state |= FlagState;
-							continue;
-						}
-					} else {
+          // Sanity check
+          if (!payloadLength) {
+            // Take the state machine to its error state
+            state |= FlagState;
+            continue;
+          }
+          if (currentMessage == MessagePlayerState) {
+            if (payloadLength > 18) {
+              // Take the state machine to its error state
+              state |= FlagState;
+              continue;
+            }
+          } else {
 #if (FPlayBinCount != 0)
-						if (payloadLength > (FPlayBinCount * 2)) {
-							// Take the state machine to its error state
-							state |= FlagState;
-							continue;
-						}
+            if (payloadLength > (FPlayBinCount * 2)) {
+              // Take the state machine to its error state
+              state |= FlagState;
+              continue;
+            }
 #endif
-					}
-					// Take the state machine to its next state
-					payloadIndex = 0;
-					state++;
-				}
-				continue;
-			case 3:
-				// We are receiving the payload
-				payloadLength--;
+          }
+          // Take the state machine to its next state
+          payloadIndex = 0;
+          state++;
+        }
+        continue;
+      case 3:
+        // We are receiving the payload
+        payloadLength--;
 
-				if (data == Escape) {
-					// Wait for the next byte before proceeding
-					state |= FlagEscape;
-					continue;
-				} else if ((state & FlagEscape)) {
-					// If the previous byte was Escape, XOR this byte with
-					// 0x01 before actually using it
-					state &= (~FlagEscape);
-					data ^= 0x01;
-				}
+        if (data == Escape) {
+          // Wait for the next byte before proceeding
+          state |= FlagEscape;
+          continue;
+        } else if ((state & FlagEscape)) {
+          // If the previous byte was Escape, XOR this byte with
+          // 0x01 before actually using it
+          state &= (~FlagEscape);
+          data ^= 0x01;
+        }
 
-				if (currentMessage == MessagePlayerState) {
+        if (currentMessage == MessagePlayerState) {
 #ifdef FPlayBigEndian
-					// All Arduinos I know are little endian, but you can
-					// define FPlayBigEndian to make it work otherwise...
-					// Maybe some other time... ;)
+          // All Arduinos I know are little endian, but you can
+          // define FPlayBigEndian to make it work otherwise...
+          // Maybe some other time... ;)
 #else
-					((uint8_t*)&playerState)[payloadIndex++] = data;
+          ((uint8_t*)&playerState)[payloadIndex++] = data;
 #endif
-					if (payloadIndex == 9) {
-						if (!payloadLength) {
-							// Take the state machine to its next state
-							state++;
-						} else {
-							// Something went wrong...
-							// Take the state machine to its error state
-							state |= FlagState;
-						}
-					}
-				} else {
+          if (payloadIndex == 10) {
+            if (!payloadLength) {
+              // Take the state machine to its next state
+              state++;
+            } else {
+              // Something went wrong...
+              // Take the state machine to its error state
+              state |= FlagState;
+            }
+          }
+        } else {
 #if (FPlayBinCount != 0)
-					bin[payloadIndex++] = data;
+          bins[payloadIndex++] = data;
 
-					if (payloadIndex == FPlayBinCount) {
-						if (!payloadLength) {
-							// Take the state machine to its next state
-							state++;
-						} else {
-							// Something went wrong...
-							// Take the state machine to its error state
-							state |= FlagState;
-						}
-					}
+          if (payloadIndex == FPlayBinCount) {
+            if (!payloadLength) {
+              // Take the state machine to its next state
+              state++;
+            } else {
+              // Something went wrong...
+              // Take the state machine to its error state
+              state |= FlagState;
+            }
+          }
 #endif
-				}
-				continue;
-			case 4:
-				// Take the state machine to its error state
-				state |= FlagState;
+        }
+        continue;
+      case 4:
+        // Take the state machine to its error state
+        state |= FlagState;
 
-				// Sanity check: data should be EoT
-				if (data == EndOfTransmission) {
-					if (currentMessage == MessagePlayerState) {
-						state |= FlagPlayerStateArrived;
-					} else {
+        // Sanity check: data should be EoT
+        if (data == EndOfTransmission) {
+          if (currentMessage == MessagePlayerState) {
+            state |= FlagPlayerStateArrived;
+          } else {
 #if (FPlayBinCount != 0)
-						state |= FlagSpectrumArrived;
+            state |= FlagBinsArrived;
 #endif
-					}
-				}
-			}
-		}
-	}
+          }
+        }
+      }
+    }
+  }
 };
 
 uint8_t _FPlay::state, _FPlay::currentMessage, _FPlay::payloadIndex;
 _FPlay::_PlayerState _FPlay::playerState;
 uint16_t _FPlay::payloadLength;
-uint8_t _FPlay::bin[FPlayBinCount];
+uint8_t _FPlay::bins[FPlayBinCount];
 
 _FPlay FPlay;
 
 #undef fs
 #undef FlagState
 #undef FlagEscape
-#undef FlagSpectrum
+#undef FlagBins
 #undef FlagPlayerState
 #undef StartOfHeading
 #undef Escape
 #undef EndOfTransmission
-#undef MessageSpectrum0
-#undef MessageSpectrum4
-#undef MessageSpectrum8
-#undef MessageSpectrum16
-#undef MessageSpectrum32
-#undef MessageSpectrum64
-#undef MessageSpectrum128
-#undef MessageSpectrum256
-#undef MessageStartSpectrum
-#undef PayloadSpectrum4
-#undef PayloadSpectrum8
-#undef PayloadSpectrum16
-#undef PayloadSpectrum32
-#undef PayloadSpectrum64
-#undef PayloadSpectrum128
-#undef PayloadSpectrum256
-#undef MessageStopSpectrum
+#undef MessageBins0
+#undef MessageBins4
+#undef MessageBins8
+#undef MessageBins16
+#undef MessageBins32
+#undef MessageBins64
+#undef MessageBins128
+#undef MessageBins256
+#undef MessageStartBinTransmission
+#undef PayloadBins4
+#undef PayloadBins8
+#undef PayloadBins16
+#undef PayloadBins32
+#undef PayloadBins64
+#undef PayloadBins128
+#undef PayloadBins256
+#undef MessageStopBinTransmission
 #undef MessagePlayerCommand
 #undef PayloadPlayerCommandUpdateState
 #undef PayloadPlayerCommandPrevious
@@ -487,9 +510,10 @@ _FPlay FPlay;
 #undef PayloadPlayerCommandPause
 #undef PayloadPlayerCommandIncreaseVolume
 #undef PayloadPlayerCommandDecreaseVolume
+#undef PayloadPlayerCommandSetVolume
 #undef MessagePlayerState
 #undef PayloadPlayerStateFlagPlaying
 #undef PayloadPlayerStateFlagLoading
-#undef MessageSpectrum
+#undef MessageBins
 
 #endif

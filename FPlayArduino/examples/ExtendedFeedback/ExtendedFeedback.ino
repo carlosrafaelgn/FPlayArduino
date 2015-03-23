@@ -16,8 +16,8 @@
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
-long lastTime;
-byte btnPrevious, btnPlayPause, btnNext;
+int lastTime, lastVolumeTime;
+byte btnPrevious, btnPlayPause, btnNext, lastVolume;
 
 void setup()
 {
@@ -37,14 +37,22 @@ void setup()
   btnNext = 0;
   pinMode(6, INPUT);
   
+  // Force the volume to be sent at least once
+  lastVolume = 255;
+  
   // Control the interval between updates
   lastTime = millis();
+  
+  // Control the interval between volume changes
+  lastVolumeTime = lastTime;
 }
 
 void loop()
 {
   // This line could go into serialEvent() if you wish to do so...
   FPlay.process();
+  
+  int now = millis();
   
   // Check if we have received detailed information from the player
   // (The information returned by songPosition() and songLength() is
@@ -77,16 +85,15 @@ void loop()
     }
     lcd.print("    ");
     
-    lastTime = millis();
+    lastTime = now;
   }
   else
   {
     // Force the information to be updated every 250ms
-    long now = millis();
     if ((now - lastTime) >= 250)
     {
-      FPlay.updateState();
       lastTime = now;
+      FPlay.updateState();
     }
   }
   
@@ -130,5 +137,25 @@ void loop()
     btnNext = btn;
     // Simple debounce for the button
     delay(100);
+  }
+  
+  // Check the volume potentiometer 10 times per second (every 100ms)
+  if ((now - lastVolumeTime) >= 100)
+  {
+    lastVolumeTime = now;
+
+    // Reuse this variable to store the potentiometer's value
+    btn = analogRead(0) / 10;
+    if (btn > 100)
+    {
+      btn = 100;
+    }
+    
+    // Send the command *only* if the volume has changed!
+    if (btn != lastVolume)
+    {
+      lastVolume = btn;
+      FPlay.setVolume(lastVolume);
+    }
   }
 }

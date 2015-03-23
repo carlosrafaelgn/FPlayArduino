@@ -37,7 +37,7 @@ void setup()
   
   // You can request the player to start sending the frequency bins
   // either in code, or manually, using the menu on the player
-  FPlay.startSpectrum();
+  FPlay.startFrequencyBinsTransmission();
 }
 
 void loop()
@@ -46,16 +46,16 @@ void loop()
   FPlay.process();
   
   // Check if we have received the frequency bins from the player
-  // (The information in bins is always available, but hasNewSpectrumArrived()
+  // (The information in bins is always available, but haveNewFrequencyBinsArrived()
   // returns true ONLY when this information first arrives)
-  if (FPlay.hasNewSpectrumArrived())
+  if (FPlay.haveNewFrequencyBinsArrived())
   {
-    // FPlay.bin[x] contains the amplitude for the xth bin,
-	// starting at 0. Each amplitude ranges from 0 to 255.
-    analogWrite(LED1, FPlay.bin[0]);
-    analogWrite(LED2, FPlay.bin[1]);
-    analogWrite(LED3, FPlay.bin[2]);
-    analogWrite(LED4, FPlay.bin[3]);
+    // FPlay.bins[x] contains the amplitude for the xth bin,
+    // starting at 0. Each amplitude ranges from 0 to 255.
+    analogWrite(LED1, FPlay.bins[0]);
+    analogWrite(LED2, FPlay.bins[1]);
+    analogWrite(LED3, FPlay.bins[2]);
+    analogWrite(LED4, FPlay.bins[3]);
   }
   
   byte btn;
