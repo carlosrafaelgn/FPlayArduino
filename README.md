@@ -54,7 +54,7 @@ Returns `true` or `false` to indicate whether the player is currently playing a 
 Note: this information is only available after `hasNewStateArrived()` has returned `true` at least once (see below).
 
 `FPlay.songPosition()`
--------------------
+----------------------
 
 Returns a value indicating the playback position of the current song in milliseconds, or `-1` if the song is still loading or if the playback position is unknown.
 
@@ -114,16 +114,32 @@ Skips to the previous song in the current playlist.
 
 Skips to the next song in the current playlist.
 
-
-
-
 `FPlay.updateState()`
 ---------------------
 
-Requests the player
+Requests the player to send fresh information with its internal state (whether it is playing/loading or not, current volume level, current song's position and length).
 
+The player already sends this information automatically in key moments, like when one song ends and another starts, for example. However, if you want to keep track of current song's position, you should manually call this method (for this purpose, a recommended interval between successive calls is 250ms).
 
-- `FPlay.end()`: Terminates the serial port used by the library (this is rarely used
+`FPlay.hasNewStateArrived()`
+----------------------------
+
+Returns `true` the first time it is called after the player has sent its internal state, and returns `false` all other times. In other words, when `hasNewStateArrived()` returns `true` means `isPlaying()`, `isLoading()`, `volume()`, `songPosition()` and `songLength()` have had their values updated with fresh information.
+
+You can always call the methods mentioned here before and they will always return valid values. The point is, these values are most of the time old (not perfectly synchronized with the player actual values). The values are only up-to-date when `hasNewStateArrived()` returns `true`.
+
+Special/Rarely used methods
+===========================
+
+`FPlay.begin(speed, config)`
+-------------
+
+Does the same initialization `begin(speed)` does, but calls `begin(speed, config)` on the serial port.
+
+`FPlay.end()`
+-------------
+
+Terminates the serial port used by the library by calling `end()` on the serial port.
 
 ----
 
