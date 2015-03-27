@@ -7,10 +7,10 @@ FPlay communicates with Arduino using Bluetooth SPP - Serial Port Profile.
 
 FPlay is available on GitHub at https://github.com/carlosrafaelgn/FPlayAndroid and on Google Play at https://play.google.com/store/apps/details?id=br.com.carlosrafaelgn.fplay
 
-Common Methods
-==============
+Control Methods
+===============
 
-FPlayArduino consists of one object, `FPlay`, and several methods. The most common methods are described below.
+FPlayArduino consists of one object, `FPlay`, and several methods. The most common methods, control-related, are described below.
 
 `FPlay.begin(speed)`
 --------------------
@@ -128,8 +128,40 @@ Returns `true` the first time it is called after the player has sent its interna
 
 You can always call the methods mentioned here before and they will always return valid values. The point is, these values are most of the time old (not perfectly synchronized with the player actual values). The values are only up-to-date when `hasNewStateArrived()` returns `true`.
 
-Special/Rarely used methods
-===========================
+Controlling and Receiving Frequency Bins
+========================================
+
+FPlay is also able to send frequency-domain data in realtime, suitable for creating visualizers. This data consists of a series of bytes, each one indicating the amplitude of one or more frequencies (the frequency bins).
+
+In order to receive such information you must first inform how many bins you would like to receive, using the `FPlayBinCount` macro. This *MUST* be placed before including the header:
+
+```c++
+#define FPlayBinCount 16
+#include <FPlayArduino.h>
+...
+```
+
+Unlike the `FPlaySerial` macro, `FPlayBinCount` *IS NOT* optional and *MUST* always be specified. Valid values are either `0`, meaning you do not wish to receive any frequency bins, or `4`, `8`, `16`, `32`, `64`, `128` and `256`.
+
+You can control when the player starts and stops sending the bins either manually, by using the controls provided on the player's screen, or via code, by calling the methods `FPlay.startFrequencyBinsTransmission()` and `FPlay.stopFrequencyBinsTransmission()`.
+
+You can check when the bins are received by calling `FPlay.haveNewFrequencyBinsArrived()`. This method behaves just like `hasNewStateArrived()`, and will return `true` only for the first time it is called after the bins have been received (even though bin data is always available).
+
+In order to improve performance, and reduce memory consumption, all bin data can be obtained accessing their array directly. For example:
+
+```c++
+...
+analogWrite(5, FPlay.bins[0]);
+analogWrite(6, FPlay.bins[1]);
+analogWrite(9, FPlay.bins[2]);
+analogWrite(10, FPlay.bins[3]);
+...
+```
+
+Each element in the array is one `byte`. Therefore, its value ranges from `0` to `255`.
+
+Special / Rarely Used Methods
+=============================
 
 `FPlay.begin(speed, config)`
 -------------
