@@ -119,7 +119,7 @@ Skips to the next song in the current playlist.
 
 Requests the player to send fresh information with its internal state (whether it is playing/loading or not, current volume level, current song's position and length).
 
-The player already sends this information automatically in key moments, like when one song ends and another starts, for example. However, if you want to keep track of current song's position, you should manually call this method (for this purpose, a recommended interval between successive calls is 250ms).
+The player already sends this information automatically in key moments, like when one song ends and another starts, for example. However, if you want to keep track of current song's position, you should manually call this method (for this purpose, a recommended interval between successive calls is 250 ms).
 
 `FPlay.hasNewStateArrived()`
 ----------------------------
@@ -159,6 +159,24 @@ analogWrite(10, FPlay.bins[3]);
 ```
 
 Each element in the array is one `byte`. Therefore, its value ranges from `0` to `255`.
+
+Bin Frenquecies
+---------------
+
+Each bin contains the amplitude of one or more frequencies. FPlay always works with 256 frequency bins internally and groups those frequencies as needed before sending them.
+
+If you request 256 bins, these are the frequencies whose amplitudes are represented in each bin (0 Hz to 11025 Hz linearly distributed over 256 values):
+- `FPlay.bin[0]`: DC (0 Hz)
+- `FPlay.bin[1]`: 43 Hz
+- `FPlay.bin[2]`: 86 Hz
+- `FPlay.bin[3]`: 129 Hz
+- ...
+- `FPlay.bin[254]`: 10982 Hz
+- `FPlay.bin[255]`: 11025 Hz
+
+When you request less than 256 bins, the player will group more than one amplitude into one bin using different techniques, according to the situation. This grouping does not follow a linear scale, though. Instead, it uses an almost-logarithmic scale.
+
+Note: For more information regarding this grouping/mapping, please, refer to the source code of the function `commonProcess()` in the file [Common.h](https://github.com/carlosrafaelgn/FPlayAndroid/blob/master/jni/Common.h).
 
 Special / Rarely Used Methods
 =============================
