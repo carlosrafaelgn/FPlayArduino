@@ -128,7 +128,7 @@ Returns `true` the first time it is called after the player has sent its interna
 
 You can always call the methods mentioned here before and they will always return valid values. The point is, these values are most of the time old (not perfectly synchronized with the player actual values). The values are only up-to-date when `hasNewStateArrived()` returns `true`.
 
-Controlling and Receiving Frequency Bins
+Controlling And Receiving Frequency Bins
 ========================================
 
 FPlay is also able to send frequency-domain data in realtime, suitable for creating visualizers. This data consists of a series of bytes, each one indicating the amplitude of one or more frequencies (the frequency bins).
@@ -182,7 +182,7 @@ Special / Rarely Used Methods
 =============================
 
 `FPlay.begin(speed, config)`
--------------
+----------------------------
 
 Does the same initialization `begin(speed)` does, but calls `begin(speed, config)` on the serial port.
 
@@ -198,29 +198,29 @@ Here you can find the layout for the examples that come with this library. The l
 
 The source code for the examples is in the library ([here](https://github.com/carlosrafaelgn/FPlayArduino/tree/master/FPlayArduino/examples)) and are not being shown here to keep this file better organized ;)
 
-SimpleControl
--------------
+Simple Control
+--------------
 
 In this example you will use three buttons to control the player's functions previous, playPause and next.
 
 ![Layout for the example Simple Control](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControl.png "Layout for the example Simple Control")
 
-SimpleControlAndFeedback
-------------------------
+Simple Control And Feedback
+---------------------------
 
 In this example you will use three buttons to control the player's functions previous, playPause and next. Also, there are three LEDs indicating the state of the player (whether it is playing or paused and if it is still loading a song).
 
 ![Layout for the example Simple Control And Feedback](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControlAndFeedback.png "Layout for the example Simple Control And Feedback")
 
-ExtendedFeedback
-----------------
+Extended Feedback
+-----------------
 
 In this example you will use three buttons to control the player's functions previous, playPause and next, and you will use a potentiometer to change the player's volume. Also, there is a LCD displaying both the position and length of the current song (in seconds).
 
 ![Layout for the example Extended Feedback](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/ExtendedFeedback.png "Layout for the example Extended Feedback")
 
-SimpleControlAndFrequencyBins
------------------------------
+Simple Control And Frequency Bins
+---------------------------------
 
 In this example you will use three buttons to control the player's functions previous, playPause and next. Also, there are four LEDs "pulsing" along with the amplitude of four frequency bins.
 
