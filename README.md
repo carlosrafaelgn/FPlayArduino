@@ -191,6 +191,41 @@ Does the same initialization `begin(speed)` does, but calls `begin(speed, config
 
 Terminates the serial port used by the library by calling `end()` on the serial port.
 
+Examples
+========
+
+Here you can find the layout for the examples that come with this library. The layouts were created using [Fritzing](http://fritzing.org/) and can be found [here, in the Fritzing folder](https://github.com/carlosrafaelgn/FPlayArduino/tree/master/Fritzing).
+
+The source code for the examples is in the library ([here](https://github.com/carlosrafaelgn/FPlayArduino/tree/master/FPlayArduino/examples)) and are not being shown here to keep this file better organized ;)
+
+SimpleControl
+-------------
+
+In this example you will use three buttons to control the player's functions previous, playPause and next.
+
+![Layout for the example Simple Control](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControl.png "Layout for the example Simple Control")
+
+SimpleControlAndFeedback
+------------------------
+
+In this example you will use three buttons to control the player's functions previous, playPause and next. Also, there are three LEDs indicating the state of the player (whether it is playing or paused and if it is still loading a song).
+
+![Layout for the example Simple Control And Feedback](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControlAndFeedback.png "Layout for the example Simple Control And Feedback")
+
+ExtendedFeedback
+----------------
+
+In this example you will use three buttons to control the player's functions previous, playPause and next, and you will use a potentiometer to change the player's volume. Also, there is a LCD displaying both the position and length of the current song (in seconds).
+
+![Layout for the example Extended Feedback](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/ExtendedFeedback.png "Layout for the example Extended Feedback")
+
+SimpleControlAndBins
+--------------------
+
+In this example you will use three buttons to control the player's functions previous, playPause and next. Also, there are four LEDs "pulsing" along with the amplitude of four frequency bins.
+
+![Layout for the example Simple Control And Bins](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControlAndBins.png "Layout for the example Simple Control And Bins")
+
 ----
 
 This projected is licensed under the terms of the FreeBSD License. See LICENSE.txt for more details.
