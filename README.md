@@ -219,12 +219,12 @@ In this example you will use three buttons to control the player's functions pre
 
 ![Layout for the example Extended Feedback](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/ExtendedFeedback.png "Layout for the example Extended Feedback")
 
-SimpleControlAndBins
---------------------
+SimpleControlAndFrequencyBins
+-----------------------------
 
 In this example you will use three buttons to control the player's functions previous, playPause and next. Also, there are four LEDs "pulsing" along with the amplitude of four frequency bins.
 
-![Layout for the example Simple Control And Bins](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControlAndBins.png "Layout for the example Simple Control And Bins")
+![Layout for the example Simple Control And Frequency Bins](https://raw.githubusercontent.com/carlosrafaelgn/FPlayArduino/master/Fritzing/SimpleControlAndFrequencyBins.png "Layout for the example Simple Control And Frequency Bins")
 
 ----
 
