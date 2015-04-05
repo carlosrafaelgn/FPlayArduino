@@ -3,6 +3,8 @@ FPlayArduino
 
 Library to control the Android music player FPlay using an Arduino :)
 
+You can download FPlayArduino library in a single zip file (here)[https://github.com/carlosrafaelgn/FPlayArduino/blob/master/FPlayArduino.zip?raw=true]!
+
 FPlay communicates with Arduino using Bluetooth SPP - Serial Port Profile.
 
 FPlay is available on GitHub at https://github.com/carlosrafaelgn/FPlayAndroid and on Google Play at https://play.google.com/store/apps/details?id=br.com.carlosrafaelgn.fplay
