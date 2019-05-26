@@ -17,18 +17,22 @@ FPlayArduino consists of one object, `FPlay`, and several methods. The most comm
 `FPlay.begin(speed)`
 --------------------
 
+Return type: `void`.
+
 Initializes all internal values and starts the serial port used by the library, using the given speed. For example: `FPlay.begin(9600)`
 
 Note: If you own an Arduino Mega or other board with more than one serial port, you can choose which serial port the library will use by placing a macro before including the header. Here is an example of how to use `Serial2` in Arduino Mega:
 
 ```c++
-#define FPlaySerial Serial1
+#define FPlaySerial Serial2
 #include <FPlayArduino.h>
 ...
 ```
 
 `FPlay.process()`
 -----------------
+
+Return type: `void`.
 
 Processes all data received from the player (This *MUST* be placed somewhere inside `loop()`, and should be called as many times as possible to prevent data loss).
 
@@ -44,12 +48,16 @@ void loop() {
 `FPlay.isLoading()`
 -------------------
 
+Return type: `bool`.
+
 Returns `true` or `false` to indicate whether the player is in the process of loading a song.
 
 Note: this information is only available after `hasNewStateArrived()` has returned `true` at least once (see below).
 
 `FPlay.isPlaying()`
 -------------------
+
+Return type: `bool`.
 
 Returns `true` or `false` to indicate whether the player is currently playing a song or is paused.
 
@@ -58,12 +66,16 @@ Note: this information is only available after `hasNewStateArrived()` has return
 `FPlay.songPosition()`
 ----------------------
 
+Return type: `int32_t` (equivalent to Arduino's `long`).
+
 Returns a value indicating the playback position of the current song in milliseconds, or `-1` if the song is still loading or if the playback position is unknown.
 
 Note: this information is only available after `hasNewStateArrived()` has returned `true` at least once (see below).
 
 `FPlay.songLength()`
 -------------------
+
+Return type: `int32_t` (equivalent to Arduino's `long`).
 
 Returns a value indicating the length of the current song in milliseconds, or `-1` if the song is still loading or if its length is unknown.
 
@@ -72,6 +84,8 @@ Note: this information is only available after `hasNewStateArrived()` has return
 `FPlay.volume()`
 ----------------
 
+Return type: `uint8_t` (equivalent to Arduino's `byte`).
+
 Returns a value from `0` to `100` indicating the player's current volume level.
 
 Note: this information is only available after `hasNewStateArrived()` has returned `true` at least once (see below).
@@ -79,45 +93,63 @@ Note: this information is only available after `hasNewStateArrived()` has return
 `FPlay.setVolume(volume)`
 -------------------------
 
-Changes the player's current volume level. `volume` must be a value from `0` to `100`.
+Return type: `void`.
+
+Changes the player's current volume level. `volume` is a `byte`/`uint8_t` value ranging from `0` to `100`.
 
 `FPlay.increaseVolume()`
 -------------------------
+
+Return type: `void`.
 
 Increases the volume level by one unit (this could be more than 1%).
 
 `FPlay.decreaseVolume()`
 -------------------------
 
+Return type: `void`.
+
 Decreases the volume level by one unit (this could be more than 1%).
 
 `FPlay.play()`
 --------------
+
+Return type: `void`.
 
 Starts playing the current song (nothing happens if the player was already playing).
 
 `FPlay.pause()`
 --------------
 
+Return type: `void`.
+
 Pauses the playback (nothing happens if the player was already paused).
 
 `FPlay.playPause()`
 -------------------
+
+Return type: `void`.
 
 Either starts or pauses the playback, depending on the current state of the player.
 
 `FPlay.previous()`
 -------------------
 
+Return type: `void`.
+
 Skips to the previous song in the current playlist.
 
 `FPlay.next()`
 --------------
 
+Return type: `void`.
+
 Skips to the next song in the current playlist.
 
 `FPlay.updateState()`
 ---------------------
+
+Return type: `void`.
 
 Requests the player to send fresh information with its internal state (whether it is playing/loading or not, current volume level, current song's position and length).
 
@@ -125,6 +157,8 @@ The player already sends this information automatically in key moments, like whe
 
 `FPlay.hasNewStateArrived()`
 ----------------------------
+
+Return type: `bool`.
 
 Returns `true` the first time it is called after the player has sent its internal state, and returns `false` all other times. In other words, when `hasNewStateArrived()` returns `true` means `isPlaying()`, `isLoading()`, `volume()`, `songPosition()` and `songLength()` have had their values updated with fresh information.
 
@@ -186,10 +220,14 @@ Special / Rarely Used Methods
 `FPlay.begin(speed, config)`
 ----------------------------
 
-Does the same initialization `begin(speed)` does, but calls `begin(speed, config)` on the serial port.
+Return type: `void`.
+
+Does the same initialization `begin(speed)` does, but calls `begin(speed, config)` on the serial port. Check out [Arduino's reference](https://www.arduino.cc/reference/en/language/functions/communication/serial/begin/) for more information.
 
 `FPlay.end()`
 -------------
+
+Return type: `void`.
 
 Terminates the serial port used by the library by calling `end()` on the serial port.
 
