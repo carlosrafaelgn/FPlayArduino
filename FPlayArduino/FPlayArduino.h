@@ -318,12 +318,14 @@ public:
   }
 
   inline static bool haveNewFrequencyBinsArrived() {
+#if (FPlayBinCount != 0)
     if ((state & FlagBinsArrived)) {
       // Clear the flag so haveNewFrequencyBinsArrived() returns true
-	  // only once after receiving the song's frequency bins
+      // only once after receiving the song's frequency bins
       state &= (~FlagBinsArrived);
       return true;
     }
+#endif
     return false;
   }
 
