@@ -39,6 +39,11 @@ namespace ProtocolTest {
 
 			ActionDataReceived = new Action(DataReceived);
 			Protocol = new FPlayProtocol();
+
+			for (int i = 0; i < 16; i++) {
+				GraphBars[i].Height = 0;
+				GraphBars[i].Top = 78 + (255 - 0);
+			}
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e) {
